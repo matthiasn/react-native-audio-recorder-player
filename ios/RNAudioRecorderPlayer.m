@@ -11,84 +11,84 @@
 #import <AVFoundation/AVFoundation.h>
 
 @implementation RNAudioRecorderPlayer {
-  NSURL *audioFileURL;
-  AVAudioRecorder *audioRecorder;
-  AVAudioPlayer *audioPlayer;
-  NSTimer *recordTimer;
-  NSTimer *playTimer;
+    NSURL *audioFileURL;
+    AVAudioRecorder *audioRecorder;
+    AVAudioPlayer *audioPlayer;
+    NSTimer *recordTimer;
+    NSTimer *playTimer;
 }
 double subscriptionDuration = 0.1;
 
 - (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag {
-  NSLog(@"audioPlayerDidFinishPlaying");
-  NSNumber *duration = [NSNumber numberWithDouble:audioPlayer.duration * 1000];
-  NSNumber *currentTime = [NSNumber numberWithDouble:audioPlayer.duration * 1000];
+    NSLog(@"audioPlayerDidFinishPlaying");
+    NSNumber *duration = [NSNumber numberWithDouble:audioPlayer.duration * 1000];
+    NSNumber *currentTime = [NSNumber numberWithDouble:audioPlayer.duration * 1000];
 
-  // Send last event then finish it.
-  // NSString* status = [NSString stringWithFormat:@"{\"duration\": \"%@\", \"current_position\": \"%@\"}", [duration stringValue], [currentTime stringValue]];
-  NSDictionary *status = @{
-                         @"duration" : [duration stringValue],
-                         @"current_position" : [duration stringValue],
-                         };
-  [self sendEventWithName:@"rn-playback" body: status];
-  if (playTimer != nil) {
-    [playTimer invalidate];
-    playTimer = nil;
-  }
+    // Send last event then finish it.
+    // NSString* status = [NSString stringWithFormat:@"{\"duration\": \"%@\", \"current_position\": \"%@\"}", [duration stringValue], [currentTime stringValue]];
+    NSDictionary *status = @{
+                             @"duration" : [duration stringValue],
+                             @"current_position" : [duration stringValue],
+                             };
+    [self sendEventWithName:@"rn-playback" body: status];
+    if (playTimer != nil) {
+        [playTimer invalidate];
+        playTimer = nil;
+    }
 }
 
 - (void)updateRecorderProgress:(NSTimer*) timer
 {
-  NSNumber *currentTime = [NSNumber numberWithDouble:audioRecorder.currentTime * 1000];
-  // NSString* status = [NSString stringWithFormat:@"{\"current_position\": \"%@\"}", [currentTime stringValue]];
-  NSDictionary *status = @{
-                         @"current_position" : [currentTime stringValue],
-                         };
-  [self sendEventWithName:@"rn-recordback" body:status];
+    NSNumber *currentTime = [NSNumber numberWithDouble:audioRecorder.currentTime * 1000];
+    // NSString* status = [NSString stringWithFormat:@"{\"current_position\": \"%@\"}", [currentTime stringValue]];
+    NSDictionary *status = @{
+                             @"current_position" : [currentTime stringValue],
+                             };
+    [self sendEventWithName:@"rn-recordback" body:status];
 }
 
 - (void)updateProgress:(NSTimer*) timer
 {
-  NSNumber *duration = [NSNumber numberWithDouble:audioPlayer.duration * 1000];
-  NSNumber *currentTime = [NSNumber numberWithDouble:audioPlayer.currentTime * 1000];
+    NSNumber *duration = [NSNumber numberWithDouble:audioPlayer.duration * 1000];
+    NSNumber *currentTime = [NSNumber numberWithDouble:audioPlayer.currentTime * 1000];
 
-  NSLog(@"updateProgress: %@", duration);
+    NSLog(@"updateProgress: %@", duration);
 
-  if ([duration intValue] == 0) {
-    [playTimer invalidate];
-    [audioPlayer stop];
-    return;
-  }
-  
-  // NSString* status = [NSString stringWithFormat:@"{\"duration\": \"%@\", \"current_position\": \"%@\"}", [duration stringValue], [currentTime stringValue]];
-  NSDictionary *status = @{
-                         @"duration" : [duration stringValue],
-                         @"current_position" : [currentTime stringValue],
-                         };
+    if ([duration intValue] == 0) {
+        [playTimer invalidate];
+        [audioPlayer stop];
+        return;
+    }
 
-  [self sendEventWithName:@"rn-playback" body:status];
+    // NSString* status = [NSString stringWithFormat:@"{\"duration\": \"%@\", \"current_position\": \"%@\"}", [duration stringValue], [currentTime stringValue]];
+    NSDictionary *status = @{
+                             @"duration" : [duration stringValue],
+                             @"current_position" : [currentTime stringValue],
+                             };
+
+    [self sendEventWithName:@"rn-playback" body:status];
 }
 
 - (void)startRecorderTimer
 {
-  dispatch_async(dispatch_get_main_queue(), ^{
-      self->recordTimer = [NSTimer scheduledTimerWithTimeInterval: subscriptionDuration
-                                           target:self
-                                           selector:@selector(updateRecorderProgress:)
-                                           userInfo:nil
-                                           repeats:YES];
-  });
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self->recordTimer = [NSTimer scheduledTimerWithTimeInterval: subscriptionDuration
+                                                             target:self
+                                                           selector:@selector(updateRecorderProgress:)
+                                                           userInfo:nil
+                                                            repeats:YES];
+    });
 }
 
 - (void)startPlayerTimer
 {
-  dispatch_async(dispatch_get_main_queue(), ^{
-      self->playTimer = [NSTimer scheduledTimerWithTimeInterval: subscriptionDuration
-                                           target:self
-                                           selector:@selector(updateProgress:)
-                                           userInfo:nil
-                                           repeats:YES];
-  });
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self->playTimer = [NSTimer scheduledTimerWithTimeInterval: subscriptionDuration
+                                                           target:self
+                                                         selector:@selector(updateProgress:)
+                                                         userInfo:nil
+                                                          repeats:YES];
+    });
 }
 
 - (dispatch_queue_t)methodQueue
@@ -100,14 +100,14 @@ RCT_EXPORT_MODULE();
 
 - (NSArray<NSString *> *)supportedEvents
 {
-  return @[@"rn-recordback", @"rn-playback"];
+    return @[@"rn-recordback", @"rn-playback"];
 }
 
 RCT_EXPORT_METHOD(setSubscriptionDuration:(double)duration
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject) {
-  subscriptionDuration = duration;
-  resolve(@"set subscription duration.");
+    subscriptionDuration = duration;
+    resolve(@"set subscription duration.");
 }
 
 RCT_EXPORT_METHOD(startRecorder:(NSString*)path
@@ -121,17 +121,22 @@ RCT_EXPORT_METHOD(startRecorder:(NSString*)path
   NSNumber *avFormat;
   NSNumber *audioQuality = [RCTConvert NSNumber:audioSets[@"AVEncoderAudioQualityKeyIOS"]];
 
+  NSArray *docDirArr = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+  NSString *audioDir = [[docDirArr objectAtIndex:0] stringByAppendingString:@"/audio/"];
+  NSFileManager *filemgr =[NSFileManager defaultManager];
+  [filemgr createDirectoryAtPath:audioDir attributes:nil];
+
   if ([path isEqualToString:@"DEFAULT"]) {
-    audioFileURL = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingString:@"sound.m4a"]];
+      audioFileURL = [NSURL fileURLWithPath:[audioDir stringByAppendingString:@"sound.m4a"]];
   } else {
-    audioFileURL = [NSURL fileURLWithPath: [NSTemporaryDirectory() stringByAppendingString:path]];
+      audioFileURL = [NSURL fileURLWithPath:[audioDir stringByAppendingString:path]];
   }
 
   if (!sampleRate) {
       sampleRate = [NSNumber numberWithFloat:44100];
   }
   if (!encoding) {
-    avFormat = [NSNumber numberWithInt:kAudioFormatAppleLossless];
+    avFormat = [NSNumber numberWithInt:kAudioFormatMPEG4AAC];
   } else {
     if ([encoding  isEqual: @"lpcm"]) {
       avFormat =[NSNumber numberWithInt:kAudioFormatLinearPCM];
@@ -187,11 +192,11 @@ RCT_EXPORT_METHOD(startRecorder:(NSString*)path
                         initWithURL:audioFileURL
                         settings:audioSettings
                         error:nil];
-  
+
   [audioRecorder setDelegate:self];
   [audioRecorder record];
   [self startRecorderTimer];
-    
+
   NSString *filePath = self->audioFileURL.absoluteString;
   resolve(filePath);
 }
@@ -230,33 +235,36 @@ RCT_EXPORT_METHOD(startPlayer:(NSString*)path
         audioFileURL = [NSURL URLWithString:path];
 
         NSURLSessionDataTask *downloadTask = [[NSURLSession sharedSession]
-        dataTaskWithURL:audioFileURL completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-            // NSData *data = [NSData dataWithContentsOfURL:audioFileURL];
-            if (!audioPlayer) {
-                audioPlayer = [[AVAudioPlayer alloc] initWithData:data error:&error];
-                audioPlayer.delegate = self;
-            }
+                                              dataTaskWithURL:audioFileURL completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
+                                                  // NSData *data = [NSData dataWithContentsOfURL:audioFileURL];
+                                                  if (!audioPlayer) {
+                                                      audioPlayer = [[AVAudioPlayer alloc] initWithData:data error:&error];
+                                                      audioPlayer.delegate = self;
+                                                  }
 
-            // Able to play in silent mode
-            [[AVAudioSession sharedInstance]
-                setCategory: AVAudioSessionCategoryPlayback
-                error: &error];
-            // Able to play in background
-            [[AVAudioSession sharedInstance] setActive: YES error: nil];
-            [[UIApplication sharedApplication] beginReceivingRemoteControlEvents];
+                                                  // Able to play in silent mode
+                                                  [[AVAudioSession sharedInstance]
+                                                   setCategory: AVAudioSessionCategoryPlayback
+                                                   error: &error];
+                                                  // Able to play in background
+                                                  [[AVAudioSession sharedInstance] setActive: YES error: nil];
+                                                  [[UIApplication sharedApplication] beginReceivingRemoteControlEvents];
 
-            [audioPlayer play];
-            [self startPlayerTimer];
-            NSString *filePath = audioFileURL.absoluteString;
-            resolve(filePath);
-        }];
+                                                  [audioPlayer play];
+                                                  [self startPlayerTimer];
+                                                  NSString *filePath = audioFileURL.absoluteString;
+                                                  resolve(filePath);
+                                              }];
 
         [downloadTask resume];
     } else {
+        NSArray *docDirArr = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+        NSString *docDir = [[docDirArr objectAtIndex:0] stringByAppendingString:@"/audio/"];
+
         if ([path isEqualToString:@"DEFAULT"]) {
-            audioFileURL = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingString:@"sound.m4a"]];
+            audioFileURL = [NSURL fileURLWithPath:[docDir stringByAppendingString:@"sound.m4a"]];
         } else {
-            audioFileURL = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingString:path]];
+            audioFileURL = [NSURL fileURLWithPath:[docDir stringByAppendingString:path]];
         }
 
         if (!audioPlayer) {
@@ -267,8 +275,8 @@ RCT_EXPORT_METHOD(startPlayer:(NSString*)path
 
         // Able to play in silent mode
         [[AVAudioSession sharedInstance]
-            setCategory: AVAudioSessionCategoryPlayback
-            error: nil];
+         setCategory: AVAudioSessionCategoryPlayback
+         error: nil];
 
         NSLog(@"Error %@",error);
         [audioPlayer play];
@@ -292,8 +300,8 @@ RCT_EXPORT_METHOD(resumePlayer: (RCTPromiseResolveBlock)resolve
     }
 
     [[AVAudioSession sharedInstance]
-        setCategory: AVAudioSessionCategoryPlayback
-        error: nil];
+     setCategory: AVAudioSessionCategoryPlayback
+     error: nil];
     [audioPlayer play];
     [self startPlayerTimer];
     NSString *filePath = audioFileURL.absoluteString;
@@ -318,7 +326,7 @@ RCT_EXPORT_METHOD(pausePlayer: (RCTPromiseResolveBlock)resolve
         if (playTimer != nil) {
             [playTimer invalidate];
             playTimer = nil;
-        } 
+        }
         resolve(@"pause play");
     } else {
         reject(@"audioPlayer pause", @"audioPlayer is not playing", nil);
